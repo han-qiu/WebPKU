@@ -1,8 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import requests
 import sys
 import getpass
-from termcolor import colored
 from lxml import html
 def usage():
 	print("python fake.py 'yes'|'no'")
@@ -15,21 +14,15 @@ else:
 		iprange = 'yes'
 	else:
 		iprange = 'no'
-username = 'your PKU ID'
+username = "Your PKU ID"
 password = getpass.getpass()
 payload = {'username':username,'password':password,"iprange":iprange,'lang':'en'}
 url = 'https://its.pku.edu.cn/cas/webLogin'
 session = requests.session()
-r = session.post(url, data = payload)
+r = session.post(url, data = payload,allow_redirects=True)
+r = session.get('https://its.pku.edu.cn/netportal/ipgwResult.jsp')
 page = html.fromstring(r.content)
-node = page.get_element_by_id('input_tip')
-if node.text:
-	print(node.text)
-for i in node:
-	if i.text == None:
-		text = i[0].text
-	else:
-		text = i.text
-	if "地址" in text:
-		text = colored(text,'red')
-	print(text)
+result = page.xpath('//tr/td//text()')
+for i in result:
+    if not '\r' in i:
+        print(i)
